@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrygent — A Deterministic Compiler for Data</title>
+    <meta name="description" content="Scrygent translates natural language into strict, immutable execution graphs. Zero code generation. Zero hallucinated mathematics.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           DESIGN TOKENS & RESET
+           ========================================= */
+        :root {
+            /* Light Theme Palette */
+            --bg-primary: #FAFAF9;
+            --bg-surface: #FFFFFF;
+            --text-primary: #1C1917;
+            --text-secondary: #57534E;
+            --text-muted: #A8A29E;
+            --border-subtle: #E7E5E4;
+
+            /* Dark Accent Palette (The Mirror & Components) */
+            --dark-slate: #0F172A;
+            --dark-slate-light: #1E293B;
+            --dark-text: #F8FAFC;
+
+            /* Sage Green Accents */
+            --green-light: #84A571; /* Used on dark backgrounds / glows */
+            --green-dark: #4A7C59;  /* Used on light backgrounds / text */
+
+            /* Code Syntax Highlighting */
+            --code-key: #38BDF8;
+            --code-string: #FBBF24;
+            --code-number: #84A571; /* Green for numbers to match theme */
+            --code-punct: #94A3B8;
+
+            /* Typography */
+            --font-display: 'Cormorant Garamond', serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           LAYOUT & UTILITIES
+           ========================================= */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            padding: 8rem 0;
+        }
+
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* =========================================
+           NAVIGATION
+           ========================================= */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(250, 250, 249, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1.25rem 0;
+        }
+
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-cta {
+            background: var(--dark-slate);
+            color: var(--dark-text) !important;
+            padding: 0.6rem 1.25rem;
+            border-radius: 6px;
+            font-size: 0.85rem !important;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1);
+            border: 1px solid rgba(132, 165, 113, 0.3);
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.15), 0 0 15px rgba(132, 165, 113, 0.2);
+            color: var(--dark-text) !important;
+        }
+
+        /* =========================================
+           HERO SECTION & THE OBSIDIAN MIRROR
+           ========================================= */
+        .hero {
+            padding-top: 12rem;
+            padding-bottom: 6rem;
+            text-align: center;
+        }
+
+        .hero-eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 8vw, 5.5rem);
+            font-weight: 500;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+
+        .hero-subtitle code {
+            font-family: var(--font-mono);
+            font-size: 0.95em;
+            background: var(--border-subtle);
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            color: var(--text-primary);
+        }
+
+        /* Hero CTA Button */
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--dark-slate);
+            color: var(--dark-text);
+            padding: 1rem 2.25rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+            border: 1px solid rgba(132, 165, 113, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 0 20px rgba(132, 165, 113, 0.15);
+            transition: all 0.3s ease;
+            margin-bottom: 4rem;
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.3), 0 0 30px rgba(132, 165, 113, 0.3);
+            border-color: var(--green-light);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green-light);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--green-light);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(132, 165, 113, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(132, 165, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(132, 165, 113, 0); }
+        }
+
+        /* The Mirror Container */
+        .mirror-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            perspective: 1000px;
+        }
+
+        .mirror {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            background-color: var(--dark-slate);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow:
+                0 25px 50px -12px rgba(15, 23, 42, 0.25),
+                0 0 0 1px rgba(15, 23, 42, 0.05);
+            cursor: crosshair;
+            transform: translateZ(0);
+        }
+
+        /* Layer 1: The Chaos (Raw Data / Fog) */
+        .mirror-chaos {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+            background-size: 24px 24px;
+            opacity: 0.4;
+            animation: pan-chaos 20s linear infinite;
+        }
+
+        @keyframes pan-chaos {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(24px, 24px); }
+        }
+
+        /* Layer 2: The Truth (Compiled JSON IR) */
+        .mirror-truth {
+            position: absolute;
+            inset: 0;
+            padding: 2.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: #E2E8F0;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mirror-truth pre {
+            margin: 0;
+            white-space: pre;
+        }
+
+        .mirror-truth .key { color: var(--code-key); }
+        .mirror-truth .string { color: var(--code-string); }
+        .mirror-truth .number { color: var(--code-number); }
+        .mirror-truth .punct { color: var(--code-punct); }
+
+        /* Layer 3: The Glass (The Mask) */
+        .mirror-glass {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(6px);
+            mask-image: radial-gradient(circle 120px at var(--x, 50%) var(--y, 50%), transparent 0%, rgba(0,0,0,0.95) 100%);
+            -webkit-mask-image: radial-gradient(circle 120px at var(--x, 50%) var(--y, 50%), transparent 0%, rgba(0,0,0,0.95) 100%);
+            transition: opacity 0.4s ease;
+        }
+
+        .mirror:not(:hover) .mirror-glass {
+            mask-image: none;
+            -webkit-mask-image: none;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(8px);
+        }
+
+        /* Green glow on hover */
+        .mirror:hover {
+            box-shadow:
+                0 25px 50px -12px rgba(15, 23, 42, 0.35),
+                0 0 0 1px rgba(132, 165, 113, 0.4);
+        }
+
+        /* =========================================
+           FEATURES (HOW IT SEES)
+           ========================================= */
+        .features {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+        }
+
+        .feature-card {
+            text-align: left;
+        }
+
+        .feature-tag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            color: var(--green-dark);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            display: block;
+            font-weight: 600;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        /* =========================================
+           COMPARISON (WHY NOT PYTHON?)
+           ========================================= */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+
+        .comparison-text h2 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 500;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .comparison-text h2 span {
+            display: block;
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 0.8em;
+        }
+
+        .comparison-text p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-text p strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .code-block {
+            background: var(--dark-slate);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+            border: 1px solid rgba(132, 165, 113, 0.2);
+        }
+
+        .code-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .code-block-title {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--code-key);
+            letter-spacing: 0.05em;
+        }
+
+        .code-block-badge {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            background: rgba(132, 165, 113, 0.15);
+            color: var(--green-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            border: 1px solid rgba(132, 165, 113, 0.3);
+            font-weight: 500;
+        }
+
+        .code-block pre {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: #E2E8F0;
+            margin: 0;
+        }
+
+        /* =========================================
+           BUILT WITH (TECH STACK)
+           ========================================= */
+        .built-with {
+            padding: 5rem 0;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
+        .built-with-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .tech-stack span {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            padding: 0.6rem 1.5rem;
+            border-radius: 99px;
+            transition: all 0.2s ease;
+        }
+
+        .tech-stack span:hover {
+            border-color: var(--green-dark);
+            color: var(--green-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(74, 124, 89, 0.1);
+        }
+
+        /* =========================================
+           FOOTER / CTA
+           ========================================= */
+        footer {
+            background: var(--dark-slate);
+            color: var(--dark-text);
+            padding: 6rem 0 3rem;
+            text-align: center;
+        }
+
+        footer h2 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 500;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        footer p {
+            color: #94A3B8;
+            margin-bottom: 2.5rem;
+            font-size: 1.05rem;
+        }
+
+        .footer-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-primary);
+            color: var(--dark-slate);
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--green-light);
+        }
+
+        .footer-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(132, 165, 113, 0.4);
+        }
+
+        .footer-bottom {
+            margin-top: 5rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #64748B;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: #94A3B8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--green-light);
+        }
+
+        /* =========================================
+           RESPONSIVE
+           ========================================= */
+        @media (max-width: 768px) {
+            section { padding: 5rem 0; }
+            .hero { padding-top: 8rem; }
+
+            .nav-links { display: none; }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .mirror-glass {
+                mask-image: none !important;
+                -webkit-mask-image: none !important;
+                background: rgba(15, 23, 42, 0.6);
+                backdrop-filter: blur(2px);
+            }
+
+            .mirror-truth {
+                font-size: 0.75rem;
+                padding: 1.5rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="container nav-inner">
+            <a href="#" class="nav-brand">◆ Scrygent</a>
+            <ul class="nav-links">
+                <li><a href="#how-it-sees">How it works</a></li>
+                <li><a href="https://github.com/mohamadmeri/scrygent/blob/main/docs/ARCHITECTURE.md" target="_blank">Architecture</a></li>
+                <li><a href="https://github.com/mohamadmeri/scrygent" target="_blank">GitHub</a></li>
+                <li><a href="#" class="nav-cta">Live Demo →</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="reveal">
+                <p class="hero-eyebrow">A Deterministic Compiler for Data</p>
+                <h1>See the answer,<br><em>not a guess.</em></h1>
+                <p class="hero-subtitle">
+                    Ask a question in plain English. Scrygent's planner decides what to compute; an LLM never writes or runs code. Every filter, aggregation, and regression is executed by <code>pandas</code> and <code>numexpr</code>, deterministically, the same way every time.
+                </p>
+
+                <!-- Primary CTA -->
+                <a href="#" class="hero-cta reveal">
+                    <span class="pulse-dot"></span>
+                    Try the Live Demo
+                </a>
+            </div>
+
+            <!-- The Obsidian Mirror -->
+            <div class="mirror-wrapper reveal">
+                <div class="mirror" id="mirror">
+                    <div class="mirror-chaos"></div>
+                    <div class="mirror-truth">
+<pre><code><span class="punct">{</span>
+  <span class="key">"tool"</span><span class="punct">:</span> <span class="string">"analyze_data"</span><span class="punct">,</span>
+  <span class="key">"group_by"</span><span class="punct">:</span> <span class="punct">[</span><span class="string">"region"</span><span class="punct">],</span>
+  <span class="key">"metrics"</span><span class="punct">:</span> <span class="punct">[</span>
+    <span class="punct">{</span> <span class="key">"column"</span><span class="punct">:</span> <span class="string">"revenue"</span><span class="punct">,</span> <span class="key">"agg"</span><span class="punct">:</span> <span class="string">"sum"</span> <span class="punct">}</span>
+  <span class="punct">],</span>
+  <span class="key">"sort"</span><span class="punct">:</span> <span class="punct">{</span> <span class="key">"by"</span><span class="punct">:</span> <span class="string">"revenue"</span><span class="punct">,</span> <span class="key">"order"</span><span class="punct">:</span> <span class="string">"desc"</span> <span class="punct">},</span>
+  <span class="key">"limit"</span><span class="punct">:</span> <span class="number">1</span>
+<span class="punct">}</span></code></pre>
+                    </div>
+                    <div class="mirror-glass"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="how-it-sees">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Three passes. Zero guesses.</h2>
+                <p>Every query moves through the same disciplined pipeline. Nothing about the answer is left to chance, and nothing about the plan is left to a script the model wrote itself.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card reveal">
+                    <span class="feature-tag">01 / Read</span>
+                    <h3>It reads before it answers.</h3>
+                    <p>Every dataset is profiled first. Schema, types, null rates, representative rows. The planner never guesses at what's in your file; it is told.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <span class="feature-tag">02 / Plan</span>
+                    <h3>It plans, it doesn't script.</h3>
+                    <p>The model chooses what to compute. Filters, aggregations, regressions. It emits them as a strict, typed instruction. Not a Python script. Not a sandbox.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <span class="feature-tag">03 / Compute</span>
+                    <h3>It proves, it doesn't hallucinate.</h3>
+                    <p>Every number in the final report traces back to deterministic code. If a step can't be expressed validly, the run stops. It never guesses instead.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="comparison-section">
+        <div class="container">
+            <div class="comparison">
+                <div class="comparison-text reveal">
+                    <h2>Why not just let it write Python? <span>Because code generation fails quietly.</span></h2>
+                    <p>
+                        Most "chat with your data" tools let the model write and execute arbitrary Python in a loop. It works, until it doesn't: a hallucinated column name, a silently wrong aggregation, a plot that never matches the numbers next to it.
+                    </p>
+                    <p>
+                        Scrygent's planner never touches your data. It emits a strict, validated instruction (the IR shown here), and a handwritten Python engine is the only thing allowed to compute anything. <strong>The LLM decides what; the engine decides how.</strong>
+                    </p>
+                </div>
+                <div class="code-block reveal">
+                    <div class="code-block-header">
+                        <span class="code-block-title">COMPILED IR</span>
+                        <span class="code-block-badge">Verified</span>
+                    </div>
+                    <pre><code><span style="color: var(--code-punct)">{</span>
+  <span style="color: var(--code-key)">"tool"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"analyze_data"</span><span style="color: var(--code-punct)">,</span>
+  <span style="color: var(--code-key)">"group_by"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-punct)">[</span><span style="color: var(--code-string)">"region"</span><span style="color: var(--code-punct)">],</span>
+  <span style="color: var(--code-key)">"metrics"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-punct)">[</span>
+    <span style="color: var(--code-punct)">{</span> <span style="color: var(--code-key)">"column"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"revenue"</span><span style="color: var(--code-punct)">,</span> <span style="color: var(--code-key)">"agg"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"sum"</span> <span style="color: var(--code-punct)">}</span>
+  <span style="color: var(--code-punct)">],</span>
+  <span style="color: var(--code-key)">"sort"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-punct)">{</span> <span style="color: var(--code-key)">"by"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"revenue"</span><span style="color: var(--code-punct)">,</span> <span style="color: var(--code-key)">"order"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"desc"</span> <span style="color: var(--code-punct)">},</span>
+  <span style="color: var(--code-key)">"limit"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-number)">1</span>
+<span style="color: var(--code-punct)">}</span></code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Built With Section -->
+    <section class="built-with">
+        <div class="container reveal">
+            <p class="built-with-label">BUILT WITH</p>
+            <div class="tech-stack">
+                <span>LangGraph</span>
+                <span>Pydantic v2</span>
+                <span>Pandas 3.x</span>
+                <span>NumExpr</span>
+                <span>Groq</span>
+                <span>Qdrant</span>
+                <span>Streamlit</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / CTA -->
+    <footer>
+        <div class="container">
+            <div class="reveal">
+                <h2>Try it on your own data.</h2>
+                <p>Upload a CSV, ask a real question, watch the pipeline compile it live.</p>
+                <a href="#" class="footer-cta">
+                    <span class="pulse-dot"></span>
+                    Launch Live Demo
+                </a>
+            </div>
+
+            <div class="footer-bottom">
+                <span>© 2026 Scrygent. A deterministic compiler for data.</span>
+                <ul class="footer-links">
+                    <li><a href="#">Portfolio</a></li>
+                    <li><a href="https://github.com/mohamadmeri/scrygent" target="_blank">GitHub</a></li>
+                    <li><a href="https://github.com/mohamadmeri/scrygent/blob/main/docs/ARCHITECTURE.md" target="_blank">Architecture</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Mirror Interaction & Scroll Reveals -->
+    <script>
+        // 1. The Obsidian Mirror Interaction
+        const mirror = document.getElementById('mirror');
+
+        mirror.addEventListener('mousemove', (e) => {
+            const rect = mirror.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            mirror.style.setProperty('--x', `${x}px`);
+            mirror.style.setProperty('--y', `${y}px`);
+        });
+
+        // 2. Scroll Reveal Animation
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
