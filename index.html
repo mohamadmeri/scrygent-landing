@@ -3,61 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrygent</title>
-    <meta name="description" content="Scrygent translates natural language into strict, immutable execution graphs. Zero code generation. Zero hallucinated mathematics.">
+    <title>Scrygent · Deterministic Compiler for Data</title>
+    <meta name="description" content="Scrygent turns natural language questions into strict, verified execution graphs instead of generated code, so every answer traces back to real math, not a guess.">
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
-        /* =========================================
-           DESIGN TOKENS & RESET
-           ========================================= */
         :root {
-            /* Light Theme Palette */
-            --bg-primary: #FAFAF9;
-            --bg-surface: #FFFFFF;
-            --text-primary: #1C1917;
-            --text-secondary: #57534E;
-            --text-muted: #A8A29E;
-            --border-subtle: #E7E5E4;
-
-            /* Dark Accent Palette (The Mirror & Components) */
-            --dark-slate: #0F172A;
-            --dark-slate-light: #1E293B;
-            --dark-text: #F8FAFC;
-
-            /* Sage Green Accents */
-            --green-light: #84A571; /* Used on dark backgrounds / glows */
-            --green-dark: #4A7C59;  /* Used on light backgrounds / text */
-
-            /* Code Syntax Highlighting */
-            --code-key: #38BDF8;
-            --code-string: #FBBF24;
-            --code-number: #84A571; /* Green for numbers to match theme */
-            --code-punct: #94A3B8;
-
-            /* Typography */
+            --bg-base: #15130F;
+            --bg-surface: #211E1A;
+            --bg-elevated: #302C27;
+            --border-subtle: #4C463D;
+            --border-accent: rgba(127, 176, 105, 0.25);
+            --text-primary: #F5F0EB;
+            --text-secondary: #A8A29A;
+            --text-muted: #78716C;
+            --sage: #7FB069;
+            --teal: #5EEAD4;
+            --amber: #F59E0B;
+            --red: #EF4444;
             --font-display: 'Cormorant Garamond', serif;
             --font-body: 'Inter', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
         }
 
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            font-size: 16px;
-        }
-
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; font-size: 16px; }
         body {
-            background-color: var(--bg-primary);
+            background-color: var(--bg-base);
             color: var(--text-primary);
             font-family: var(--font-body);
             line-height: 1.6;
@@ -65,569 +40,374 @@
             overflow-x: hidden;
         }
 
-        /* =========================================
-           LAYOUT & UTILITIES
-           ========================================= */
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 2rem;
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+        section { padding: 6.5rem 0; position: relative; }
+        @media (min-width: 768px) {
+            section { padding: 9rem 0; }
+            .container { padding: 0 2rem; }
         }
 
-        section {
-            padding: 8rem 0;
-        }
-
-        /* Scroll Reveal Animation */
         .reveal {
             opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-                        transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(30px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
 
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* =========================================
-           NAVIGATION
-           ========================================= */
+        /* NAV */
         nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            background: rgba(250, 250, 249, 0.85);
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(15, 14, 13, 0.85);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-subtle);
-            padding: 1.25rem 0;
+            padding: 1rem 0;
         }
-
-        .nav-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
         .nav-brand {
-            font-family: var(--font-display);
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            text-decoration: none;
-            letter-spacing: -0.02em;
+            font-family: var(--font-display); font-size: 1.4rem; font-weight: 600;
+            color: var(--text-primary); text-decoration: none; letter-spacing: -0.02em;
         }
+        .nav-brand .mark { color: var(--sage); margin-right: 0.25rem; }
+        .nav-links { display: none; align-items: center; gap: 2rem; list-style: none; }
+        @media (min-width: 768px) { .nav-links { display: flex; } }
+        .nav-links a { font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; font-family: var(--font-body); }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-cta { background: var(--bg-elevated); color: var(--text-primary) !important; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.8rem !important; border: 1px solid var(--border-subtle); transition: all 0.2s; }
+        .nav-cta:hover { border-color: var(--sage); color: var(--sage) !important; }
 
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2.5rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--text-primary);
-        }
-
-        .nav-cta {
-            background: var(--dark-slate);
-            color: var(--dark-text) !important;
-            padding: 0.6rem 1.25rem;
-            border-radius: 6px;
-            font-size: 0.85rem !important;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1);
-            border: 1px solid rgba(132, 165, 113, 0.3);
-        }
-
-        .nav-cta:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.15), 0 0 15px rgba(132, 165, 113, 0.2);
-            color: var(--dark-text) !important;
-        }
-
-        /* =========================================
-           HERO SECTION & THE OBSIDIAN MIRROR
-           ========================================= */
-        .hero {
-            padding-top: 12rem;
-            padding-bottom: 6rem;
-            text-align: center;
-        }
-
+        /* HERO */
+        .hero { padding-top: 10rem; padding-bottom: 4rem; text-align: center; }
+        @media (min-width: 768px) { .hero { padding-top: 12rem; padding-bottom: 5rem; } }
         .hero-eyebrow {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            letter-spacing: 0.15em;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 1.5rem;
+            font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.15em;
+            color: var(--text-muted); text-transform: uppercase; margin-bottom: 1.5rem;
         }
-
         .hero h1 {
-            font-family: var(--font-display);
-            font-size: clamp(3rem, 8vw, 5.5rem);
-            font-weight: 500;
-            line-height: 1.1;
-            letter-spacing: -0.03em;
-            color: var(--text-primary);
-            margin-bottom: 2rem;
+            font-family: var(--font-display); font-size: clamp(2.8rem, 7vw, 5rem);
+            font-weight: 500; line-height: 1.08; letter-spacing: -0.03em;
+            color: var(--text-primary); margin-bottom: 1.5rem;
         }
-
-        .hero h1 em {
-            font-style: italic;
-            color: var(--text-secondary);
-        }
-
+        .hero h1 em { font-style: italic; color: var(--text-secondary); }
         .hero-subtitle {
-            font-size: 1.15rem;
-            color: var(--text-secondary);
-            max-width: 650px;
-            margin: 0 auto 2.5rem;
-            line-height: 1.7;
+            font-size: 1.1rem; color: var(--text-secondary); max-width: 640px;
+            margin: 0 auto 2.5rem; line-height: 1.7;
         }
-
         .hero-subtitle code {
-            font-family: var(--font-mono);
-            font-size: 0.95em;
-            background: var(--border-subtle);
-            padding: 0.15em 0.4em;
-            border-radius: 4px;
-            color: var(--text-primary);
+            font-family: var(--font-mono); font-size: 0.9em; background: var(--bg-elevated);
+            padding: 0.15em 0.4em; border-radius: 4px; color: var(--sage); border: 1px solid var(--border-subtle);
         }
-
-        /* Hero CTA Button */
         .hero-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--dark-slate);
-            color: var(--dark-text);
-            padding: 1rem 2.25rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.05rem;
-            border: 1px solid rgba(132, 165, 113, 0.4);
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 0 20px rgba(132, 165, 113, 0.15);
-            transition: all 0.3s ease;
-            margin-bottom: 4rem;
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--bg-surface); color: var(--text-primary);
+            padding: 0.9rem 2rem; border-radius: 8px; text-decoration: none;
+            font-weight: 600; font-size: 1rem; border: 1px solid var(--border-subtle);
+            transition: all 0.25s ease; margin-bottom: 3rem;
         }
-
-        .hero-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.3), 0 0 30px rgba(132, 165, 113, 0.3);
-            border-color: var(--green-light);
-        }
-
+        .hero-cta:hover { border-color: var(--sage); box-shadow: 0 0 20px rgba(127, 176, 105, 0.15); }
         .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--green-light);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--green-light);
-            animation: pulse-green 2s infinite;
+            width: 8px; height: 8px; background: var(--sage); border-radius: 50%;
+            box-shadow: 0 0 8px var(--sage); animation: pulse-sage 2.5s infinite;
+        }
+        @keyframes pulse-sage {
+            0% { box-shadow: 0 0 0 0 rgba(127, 176, 105, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(127, 176, 105, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(127, 176, 105, 0); }
+        }
+        .query-setup {
+            max-width: 720px; margin: 0 auto; background: var(--bg-elevated);
+            border: 1px solid var(--border-accent); border-radius: 14px; padding: 2rem; text-align: left;
+            position: relative; overflow: hidden;
+            box-shadow: 0 0 50px rgba(127, 176, 105, 0.09), 0 12px 30px rgba(0,0,0,0.25);
+        }
+        .query-setup::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--sage), var(--teal));
+        }
+        .query-setup-label {
+            font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em;
+            color: var(--sage); text-transform: uppercase; margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .query-setup-question {
+            font-family: var(--font-display); font-size: 1.6rem; font-weight: 600;
+            color: var(--text-primary); margin-bottom: 1.25rem; line-height: 1.3;
+        }
+        @media (min-width: 768px) { .query-setup-question { font-size: 1.85rem; } }
+        .query-setup-meta {
+            font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);
+            padding-top: 1rem; border-top: 1px solid var(--border-subtle);
+        }
+        .query-setup-meta span { color: var(--sage); }
+
+        /* TECH STACK STRIP */
+        .tech-strip { padding: 1.75rem 0; text-align: center; }
+        .tech-strip-inner {
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+            gap: 0.6rem; max-width: 800px; margin: 0 auto;
+        }
+        .tech-strip-label {
+            font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.1em; margin-right: 0.4rem;
+        }
+        .tech-chip {
+            font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary);
+            background: var(--bg-surface); border: 1px solid var(--border-subtle);
+            padding: 0.3rem 0.7rem; border-radius: 99px;
         }
 
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(132, 165, 113, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(132, 165, 113, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(132, 165, 113, 0); }
+        .pipeline-scope { position: relative; }
+
+        /* PIPELINE STRIP */
+        .pipeline-section {
+            padding: 1.5rem 0; background: var(--bg-surface);
+            border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);
+            position: sticky; top: 60px; z-index: 50;
+        }
+        .pipeline-strip {
+            display: flex; align-items: center; justify-content: center; gap: 0;
+            max-width: 800px; margin: 0 auto;
+        }
+        .pipeline-node {
+            display: flex; align-items: center; gap: 8px;
+            font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);
+            padding: 0.5rem 0.75rem; border-radius: 6px; transition: all 0.4s ease; white-space: nowrap;
+        }
+        .pipeline-node .node-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-subtle); transition: all 0.4s ease; }
+        .pipeline-node.active { color: var(--text-primary); background: var(--bg-elevated); }
+        .pipeline-node.active .node-dot { background: var(--sage); box-shadow: 0 0 8px var(--sage); animation: pulse-sage 2s infinite; }
+        .pipeline-node.done { color: var(--sage); }
+        .pipeline-node.done .node-dot { background: var(--sage); opacity: 0.6; }
+        .pipeline-connector { flex: 1; height: 1px; background: var(--border-subtle); max-width: 40px; transition: background 0.4s ease; }
+        .pipeline-connector.active { background: var(--sage); opacity: 0.4; }
+        @media (max-width: 640px) {
+            .pipeline-strip { flex-wrap: wrap; gap: 0.5rem; }
+            .pipeline-connector { display: none; }
+            .pipeline-node { font-size: 0.7rem; padding: 0.4rem 0.6rem; }
         }
 
-        /* The Mirror Container */
-        .mirror-wrapper {
-            max-width: 800px;
-            margin: 0 auto;
-            perspective: 1000px;
+        /* SECTION HEADERS */
+        .section-label {
+            font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em;
+            color: var(--sage); text-transform: uppercase; margin-bottom: 1rem;
+            display: block; font-weight: 500;
         }
-
-        .mirror {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16 / 10;
-            background-color: var(--dark-slate);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow:
-                0 25px 50px -12px rgba(15, 23, 42, 0.25),
-                0 0 0 1px rgba(15, 23, 42, 0.05);
-            cursor: crosshair;
-            transform: translateZ(0);
+        .section-headline {
+            font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 500; line-height: 1.15; letter-spacing: -0.02em;
+            margin-bottom: 1.25rem; color: var(--text-primary);
         }
-
-        /* Layer 1: The Chaos (Raw Data / Fog) */
-        .mirror-chaos {
-            position: absolute;
-            inset: 0;
-            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
-            background-size: 24px 24px;
-            opacity: 0.4;
-            animation: pan-chaos 20s linear infinite;
+        .section-desc {
+            font-size: 1.08rem; color: var(--text-secondary); line-height: 1.75;
+            max-width: 620px; margin-bottom: 1.1rem;
         }
-
-        @keyframes pan-chaos {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(24px, 24px); }
+        .section-detail {
+            font-size: 0.92rem; color: var(--text-muted); line-height: 1.75;
+            max-width: 600px; margin-bottom: 2.75rem;
         }
+        .section-detail code { color: var(--sage); }
 
-        /* Layer 2: The Truth (Compiled JSON IR) */
-        .mirror-truth {
-            position: absolute;
-            inset: 0;
-            padding: 2.5rem;
-            font-family: var(--font-mono);
-            font-size: 0.95rem;
-            line-height: 1.8;
-            color: #E2E8F0;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mirror-truth pre {
-            margin: 0;
-            white-space: pre;
-        }
-
-        .mirror-truth .key { color: var(--code-key); }
-        .mirror-truth .string { color: var(--code-string); }
-        .mirror-truth .number { color: var(--code-number); }
-        .mirror-truth .punct { color: var(--code-punct); }
-
-        /* Layer 3: The Glass (The Mask) */
-        .mirror-glass {
-            position: absolute;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(6px);
-            mask-image: radial-gradient(circle 120px at var(--x, 50%) var(--y, 50%), transparent 0%, rgba(0,0,0,0.95) 100%);
-            -webkit-mask-image: radial-gradient(circle 120px at var(--x, 50%) var(--y, 50%), transparent 0%, rgba(0,0,0,0.95) 100%);
-            transition: opacity 0.4s ease;
-        }
-
-        .mirror:not(:hover) .mirror-glass {
-            mask-image: none;
-            -webkit-mask-image: none;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(8px);
-        }
-
-        /* Green glow on hover */
-        .mirror:hover {
-            box-shadow:
-                0 25px 50px -12px rgba(15, 23, 42, 0.35),
-                0 0 0 1px rgba(132, 165, 113, 0.4);
-        }
-
-        /* =========================================
-           FEATURES (HOW IT SEES)
-           ========================================= */
-        .features {
-            background: var(--bg-surface);
-            border-top: 1px solid var(--border-subtle);
+        /* 01 / PROFILE */
+        .profile-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        @media (min-width: 768px) { .profile-grid { grid-template-columns: 1.1fr 1fr; gap: 3rem; align-items: start; } }
+        .data-table-wrap { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 10px; overflow: hidden; }
+        .data-table-header {
+            padding: 0.75rem 1rem; background: var(--bg-elevated);
             border-bottom: 1px solid var(--border-subtle);
+            font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .data-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.78rem; }
+        .data-table th { text-align: left; padding: 0.6rem 1rem; color: var(--text-secondary); font-weight: 500; border-bottom: 1px solid var(--border-subtle); background: rgba(68, 64, 60, 0.15); }
+        .data-table td { padding: 0.5rem 1rem; color: var(--text-muted); border-bottom: 1px solid rgba(68, 64, 60, 0.3); }
+        .data-table tr:last-child td { border-bottom: none; }
+
+        .schema-list { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.25rem; }
+        .schema-item { display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0; border-bottom: 1px solid rgba(76, 70, 61, 0.3); font-family: var(--font-mono); font-size: 0.82rem; }
+        .schema-item:last-child { border-bottom: none; }
+        .schema-name { color: var(--text-secondary); }
+        .schema-type { color: var(--text-muted); font-size: 0.75rem; }
+        .schema-tag {
+            font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; margin-left: 0.5rem;
+            font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .tag-sage { background: rgba(127, 176, 105, 0.12); color: var(--sage); border: 1px solid rgba(127, 176, 105, 0.25); }
+        .tag-teal { background: rgba(94, 234, 212, 0.08); color: var(--teal); border: 1px solid rgba(94, 234, 212, 0.2); }
+        .tag-amber { background: rgba(245, 158, 11, 0.08); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.2); }
+
+        .profile-insight {
+            background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 1.5rem;
+        }
+        .profile-insight h4 {
+            font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em;
+            color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem;
+        }
+        .insight-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.4rem 0; font-family: var(--font-mono); font-size: 0.82rem;
+            border-bottom: 1px solid rgba(68, 64, 60, 0.2);
+        }
+        .insight-row:last-child { border-bottom: none; }
+        .insight-key { color: var(--text-secondary); }
+        .insight-val { color: var(--text-muted); font-size: 0.78rem; }
+
+        /* 02 / PLAN */
+        .pass-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+        @media (min-width: 768px) { .pass-grid { grid-template-columns: repeat(3, 1fr); } }
+        .pass-card {
+            background: var(--bg-surface); border: 1px solid var(--border-subtle);
+            border-radius: 10px; padding: 1.75rem; position: relative; transition: border-color 0.3s;
+        }
+        .pass-card:hover { border-color: var(--border-accent); }
+        .pass-card.active-pass { border-color: var(--sage); box-shadow: 0 0 0 1px rgba(127, 176, 105, 0.1); }
+        .pass-number { font-family: var(--font-mono); font-size: 0.7rem; color: var(--sage); letter-spacing: 0.1em; margin-bottom: 0.75rem; display: block; }
+        .pass-title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary); }
+        .pass-body { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; }
+        .pass-annotation {
+            margin-top: 1rem; padding: 0.6rem 0.75rem;
+            background: rgba(94, 234, 212, 0.06); border-left: 2px solid var(--teal);
+            border-radius: 0 6px 6px 0; font-family: var(--font-mono); font-size: 0.78rem; color: var(--teal);
+        }
+        .pass-annotation.sage { border-left-color: var(--sage); color: var(--sage); background: rgba(127, 176, 105, 0.06); }
+
+        .lazy-fetch-note {
+            background: var(--bg-surface); border: 1px solid var(--border-subtle); border-left: 3px solid var(--amber);
+            border-radius: 0 10px 10px 0; padding: 1rem 1.25rem; margin-bottom: 2rem;
+            font-family: var(--font-mono); font-size: 0.85rem; color: var(--amber);
+        }
+        .lazy-fetch-note strong { color: var(--text-primary); }
+
+        .ir-climax {
+            background: var(--bg-surface); border: 1px solid var(--border-accent);
+            border-radius: 12px; padding: 2rem; position: relative; overflow: hidden;
+        }
+        .ir-climax::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, var(--sage), var(--teal));
+        }
+        .ir-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .ir-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--sage); letter-spacing: 0.08em; text-transform: uppercase; }
+        .ir-badge { font-family: var(--font-mono); font-size: 0.7rem; background: rgba(127, 176, 105, 0.12); color: var(--sage); padding: 0.3rem 0.75rem; border-radius: 99px; border: 1px solid var(--border-accent); }
+        .ir-code { font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.7; color: var(--text-primary); overflow-x: auto; }
+        .ir-code .key { color: var(--teal); }
+        .ir-code .string { color: var(--sage); }
+        .ir-code .number { color: #FBBF24; }
+        .ir-code .punct { color: var(--text-muted); }
+        .ir-code .bool { color: #F472B6; }
+
+        /* 03 / EXECUTE */
+        .execute-layout { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        @media (min-width: 768px) { .execute-layout { grid-template-columns: 1.2fr 1fr; align-items: start; } }
+        .compiler-log {
+            background: var(--bg-surface); border: 1px solid var(--border-subtle);
+            border-radius: 10px; padding: 1.75rem; font-family: var(--font-mono);
+            font-size: 0.85rem; line-height: 1.9;
+        }
+        .log-line { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.25rem; }
+        .log-check { color: var(--sage); font-weight: 500; }
+        .log-warn { color: var(--amber); font-weight: 500; }
+        .log-bolt { color: var(--teal); font-weight: 500; }
+        .log-text { color: var(--text-secondary); }
+        .log-time { color: var(--text-muted); margin-left: auto; font-size: 0.78rem; }
+        .log-detail { padding-left: 1.75rem; color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem; }
+        .log-detail em { color: var(--amber); font-style: normal; }
+        .log-file { color: var(--teal); font-size: 0.78rem; }
+
+        .self-heal {
+            background: var(--bg-surface); border: 1px solid var(--border-subtle);
+            border-left: 3px solid var(--amber); border-radius: 0 10px 10px 0; overflow: hidden;
+        }
+        .self-heal-toggle {
+            width: 100%; padding: 1rem 1.25rem; background: none; border: none;
+            color: var(--amber); font-family: var(--font-mono); font-size: 0.85rem;
+            text-align: left; cursor: pointer; display: flex; align-items: center; gap: 0.75rem;
+            transition: background 0.2s;
+        }
+        .self-heal-toggle:hover { background: rgba(245, 158, 11, 0.05); }
+        .self-heal-toggle .chevron { transition: transform 0.3s; margin-left: auto; color: var(--text-muted); }
+        .self-heal.open .chevron { transform: rotate(180deg); }
+        .self-heal-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; padding: 0 1.25rem; }
+        .self-heal.open .self-heal-content { max-height: 600px; padding: 0 1.25rem 1.25rem; }
+        .heal-step { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.6rem; font-family: var(--font-mono); font-size: 0.8rem; }
+        .heal-step .heal-icon { color: var(--amber); }
+        .heal-step .heal-text { color: var(--text-secondary); }
+        .heal-step .heal-retry { color: var(--sage); }
+        .heal-step .heal-suggest { color: var(--teal); }
+
+        .zero-trust-note {
+            margin-top: 1.5rem; padding: 0.75rem;
+            background: rgba(94, 234, 212, 0.05); border: 1px solid rgba(94, 234, 212, 0.15);
+            border-radius: 6px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--teal);
         }
 
-        .section-header {
-            text-align: center;
-            margin-bottom: 5rem;
+        /* 04 / REPORT */
+        .report-card {
+            background: var(--bg-surface); border: 1px solid var(--border-subtle);
+            border-radius: 12px; padding: 2rem; margin-bottom: 2rem;
         }
-
-        .section-header h2 {
-            font-family: var(--font-display);
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 500;
-            letter-spacing: -0.02em;
-            margin-bottom: 1rem;
+        .report-card .primary-answer {
+            font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.9rem);
+            font-weight: 500; line-height: 1.4; color: var(--text-primary); margin-bottom: 1.5rem;
         }
-
-        .section-header p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
+        .report-card .primary-answer strong { color: var(--sage); font-weight: 600; }
+        .prime-directive {
+            margin-top: 1.5rem; padding: 1rem;
+            background: rgba(127, 176, 105, 0.06); border: 1px solid var(--border-accent);
+            border-radius: 8px; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;
         }
+        .prime-directive strong { color: var(--sage); }
+        .insight-list { list-style: none; margin-bottom: 2rem; }
+        .insight-list li { padding: 0.5rem 0; padding-left: 1.25rem; position: relative; color: var(--text-secondary); font-size: 0.95rem; }
+        .insight-list li::before { content: '—'; position: absolute; left: 0; color: var(--sage); }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 3rem;
+        .graph-container {
+            background: var(--bg-base); border: 1px solid var(--border-subtle);
+            border-radius: 10px; padding: 2rem; position: relative;
         }
+        .graph-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .graph-title { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+        .graph-badge { font-family: var(--font-mono); font-size: 0.7rem; background: rgba(127, 176, 105, 0.1); color: var(--sage); padding: 0.25rem 0.6rem; border-radius: 99px; border: 1px solid var(--border-accent); }
+        .svg-chart { width: 100%; height: auto; }
 
-        .feature-card {
-            text-align: left;
+        /* RESILIENCE GRID */
+        .resilience-grid {
+            display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2.5rem;
         }
-
-        .feature-tag {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            letter-spacing: 0.1em;
-            color: var(--green-dark);
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-            display: block;
-            font-weight: 600;
+        @media (min-width: 768px) { .resilience-grid { grid-template-columns: repeat(3, 1fr); } }
+        .resilience-card {
+            background: var(--bg-surface); border: 1px solid var(--border-subtle);
+            border-radius: 10px; padding: 1.75rem;
         }
-
-        .feature-card h3 {
-            font-family: var(--font-display);
-            font-size: 1.75rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            letter-spacing: -0.01em;
+        .resilience-card h4 {
+            font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.1em;
+            color: var(--sage); text-transform: uppercase; margin-bottom: 0.75rem;
         }
+        .resilience-card p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.7; }
 
-        .feature-card p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            line-height: 1.7;
+        /* FOOTER */
+        .footer-cta-section { background: var(--bg-surface); border-top: 1px solid var(--border-subtle); text-align: center; padding: 5rem 0; }
+        .footer-cta-section h2 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 500; margin-bottom: 1rem; color: var(--text-primary); }
+        .footer-cta-section p { color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.05rem; }
+        .footer-cta-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--bg-elevated); color: var(--text-primary);
+            padding: 1rem 2.25rem; border-radius: 8px; text-decoration: none;
+            font-weight: 600; font-size: 1rem; border: 1px solid var(--sage);
+            transition: all 0.25s ease;
         }
+        .footer-cta-btn:hover { background: rgba(127, 176, 105, 0.08); box-shadow: 0 0 25px rgba(127, 176, 105, 0.12); }
+        .footer-bottom { background: var(--bg-base); border-top: 1px solid var(--border-subtle); padding: 2rem 0; }
+        .footer-bottom-inner { display: flex; flex-direction: column; gap: 1rem; align-items: center; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); }
+        @media (min-width: 768px) { .footer-bottom-inner { flex-direction: row; } }
+        .footer-links { display: flex; gap: 1.5rem; list-style: none; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--sage); }
 
-        /* =========================================
-           COMPARISON (WHY NOT PYTHON?)
-           ========================================= */
-        .comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5rem;
-            align-items: center;
-        }
-
-        .comparison-text h2 {
-            font-family: var(--font-display);
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 500;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            letter-spacing: -0.02em;
-        }
-
-        .comparison-text h2 span {
-            display: block;
-            font-style: italic;
-            color: var(--text-secondary);
-            font-size: 0.8em;
-        }
-
-        .comparison-text p {
-            color: var(--text-secondary);
-            font-size: 1.05rem;
-            line-height: 1.8;
-            margin-bottom: 1.5rem;
-        }
-
-        .comparison-text p strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .code-block {
-            background: var(--dark-slate);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            overflow-x: auto;
-            border: 1px solid rgba(132, 165, 113, 0.2);
-        }
-
-        .code-block-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .code-block-title {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--code-key);
-            letter-spacing: 0.05em;
-        }
-
-        .code-block-badge {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            background: rgba(132, 165, 113, 0.15);
-            color: var(--green-light);
-            padding: 0.25rem 0.75rem;
-            border-radius: 99px;
-            border: 1px solid rgba(132, 165, 113, 0.3);
-            font-weight: 500;
-        }
-
-        .code-block pre {
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            line-height: 1.7;
-            color: #E2E8F0;
-            margin: 0;
-        }
-
-        /* =========================================
-           BUILT WITH (TECH STACK)
-           ========================================= */
-        .built-with {
-            padding: 5rem 0;
-            border-top: 1px solid var(--border-subtle);
-            text-align: center;
-        }
-
-        .built-with-label {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            letter-spacing: 0.15em;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            text-transform: uppercase;
-        }
-
-        .tech-stack {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        .tech-stack span {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            padding: 0.6rem 1.5rem;
-            border-radius: 99px;
-            transition: all 0.2s ease;
-        }
-
-        .tech-stack span:hover {
-            border-color: var(--green-dark);
-            color: var(--green-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(74, 124, 89, 0.1);
-        }
-
-        /* =========================================
-           FOOTER / CTA
-           ========================================= */
-        footer {
-            background: var(--dark-slate);
-            color: var(--dark-text);
-            padding: 6rem 0 3rem;
-            text-align: center;
-        }
-
-        footer h2 {
-            font-family: var(--font-display);
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 500;
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
-        }
-
-        footer p {
-            color: #94A3B8;
-            margin-bottom: 2.5rem;
-            font-size: 1.05rem;
-        }
-
-        .footer-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--bg-primary);
-            color: var(--dark-slate);
-            padding: 1rem 2.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--green-light);
-        }
-
-        .footer-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(132, 165, 113, 0.4);
-        }
-
-        .footer-bottom {
-            margin-top: 5rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
-            color: #64748B;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .footer-links a {
-            color: #94A3B8;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .footer-links a:hover {
-            color: var(--green-light);
-        }
-
-        /* =========================================
-           RESPONSIVE
-           ========================================= */
-        @media (max-width: 768px) {
-            section { padding: 5rem 0; }
-            .hero { padding-top: 8rem; }
-
-            .nav-links { display: none; }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-
-            .comparison {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-
-            .mirror-glass {
-                mask-image: none !important;
-                -webkit-mask-image: none !important;
-                background: rgba(15, 23, 42, 0.6);
-                backdrop-filter: blur(2px);
-            }
-
-            .mirror-truth {
-                font-size: 0.75rem;
-                padding: 1.5rem;
-            }
-
-            .footer-bottom {
-                flex-direction: column;
-                gap: 1.5rem;
-            }
+        @media (max-width: 767px) {
+            .pipeline-section { top: 56px; }
+            .ir-climax { padding: 1.25rem; }
+            .ir-code { font-size: 0.78rem; }
+            .report-card { padding: 1.25rem; }
         }
     </style>
 </head>
@@ -636,9 +416,9 @@
     <!-- Navigation -->
     <nav>
         <div class="container nav-inner">
-            <a href="#" class="nav-brand">◆ Scrygent</a>
+            <a href="#" class="nav-brand"><span class="mark">◆</span>Scrygent</a>
             <ul class="nav-links">
-                <li><a href="#how-it-sees">How it works</a></li>
+                <li><a href="https://mohamadmeri.pages.dev/" target="_blank">Portfolio</a></li>
                 <li><a href="https://github.com/mohamadmeri/scrygent/blob/main/docs/ARCHITECTURE.md" target="_blank">Architecture</a></li>
                 <li><a href="https://github.com/mohamadmeri/scrygent" target="_blank">GitHub</a></li>
                 <li><a href="https://scrygent.streamlit.app/" class="nav-cta">Live Demo →</a></li>
@@ -653,168 +433,522 @@
                 <p class="hero-eyebrow">A Deterministic Compiler for Data</p>
                 <h1>See the answer,<br><em>not a guess.</em></h1>
                 <p class="hero-subtitle">
-                    Ask a question in plain English. Scrygent's planner decides what to compute; an LLM never writes or runs code. Every filter, aggregation, and regression is executed by <code>pandas</code> and <code>numexpr</code>, deterministically, the same way every time.
+                    Upload a spreadsheet, ask a question the way you'd ask a person, and get back a real, checked answer instead of a script that might quietly be wrong. An AI figures out what to calculate, but it never writes or runs the code itself. That part is handled by the same deterministic Python every time.
                 </p>
-
-                <!-- Primary CTA -->
-                <a href="https://scrygent.streamlit.app/" class="hero-cta reveal">
+                <a href="https://scrygent.streamlit.app/" class="hero-cta">
                     <span class="pulse-dot"></span>
                     Try the Live Demo
                 </a>
             </div>
 
-            <!-- The Obsidian Mirror -->
-            <div class="mirror-wrapper reveal">
-                <div class="mirror" id="mirror">
-                    <div class="mirror-chaos"></div>
-                    <div class="mirror-truth">
-<pre><code><span class="punct">{</span>
-  <span class="key">"tool"</span><span class="punct">:</span> <span class="string">"analyze_data"</span><span class="punct">,</span>
-  <span class="key">"group_by"</span><span class="punct">:</span> <span class="punct">[</span><span class="string">"region"</span><span class="punct">],</span>
-  <span class="key">"metrics"</span><span class="punct">:</span> <span class="punct">[</span>
-    <span class="punct">{</span> <span class="key">"column"</span><span class="punct">:</span> <span class="string">"revenue"</span><span class="punct">,</span> <span class="key">"agg"</span><span class="punct">:</span> <span class="string">"sum"</span> <span class="punct">}</span>
-  <span class="punct">],</span>
-  <span class="key">"sort"</span><span class="punct">:</span> <span class="punct">{</span> <span class="key">"by"</span><span class="punct">:</span> <span class="string">"revenue"</span><span class="punct">,</span> <span class="key">"order"</span><span class="punct">:</span> <span class="string">"desc"</span> <span class="punct">},</span>
-  <span class="key">"limit"</span><span class="punct">:</span> <span class="number">1</span>
-<span class="punct">}</span></code></pre>
-                    </div>
-                    <div class="mirror-glass"></div>
+            <div class="query-setup reveal">
+                <div class="query-setup-label"><span class="pulse-dot" style="margin-bottom: 1px;"></span>Watch this question get answered, below</div>
+                <div class="query-setup-question">"What is the average net worth of tech billionaires in the US compared to China? Show me a bar chart."</div>
+                <div class="query-setup-meta">
+                    Dataset: <span>forbes_billionaires.csv</span> · 2,640 rows · 124 columns · Source: Forbes (public)
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features" id="how-it-sees">
+    <!-- Tech Stack Strip -->
+    <div class="tech-strip">
         <div class="container">
-            <div class="section-header reveal">
-                <h2>Three passes. Zero guesses.</h2>
-                <p>Every query moves through the same disciplined pipeline. Nothing about the answer is left to chance, and nothing about the plan is left to a script the model wrote itself.</p>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card reveal">
-                    <span class="feature-tag">01 / Read</span>
-                    <h3>It reads before it answers.</h3>
-                    <p>Every dataset is profiled first. Schema, types, null rates, representative rows. The planner never guesses at what's in your file; it is told.</p>
-                </div>
-                <div class="feature-card reveal">
-                    <span class="feature-tag">02 / Plan</span>
-                    <h3>It plans, it doesn't script.</h3>
-                    <p>The model chooses what to compute. Filters, aggregations, regressions. It emits them as a strict, typed instruction. Not a Python script. Not a sandbox.</p>
-                </div>
-                <div class="feature-card reveal">
-                    <span class="feature-tag">03 / Compute</span>
-                    <h3>It proves, it doesn't hallucinate.</h3>
-                    <p>Every number in the final report traces back to deterministic code. If a step can't be expressed validly, the run stops. It never guesses instead.</p>
-                </div>
+            <div class="tech-strip-inner">
+                <span class="tech-strip-label">Built with</span>
+                <span class="tech-chip">Python</span>
+                <span class="tech-chip">LangGraph</span>
+                <span class="tech-chip">Pydantic v2</span>
+                <span class="tech-chip">pandas</span>
+                <span class="tech-chip">numexpr</span>
+                <span class="tech-chip">Qdrant</span>
+                <span class="tech-chip">Streamlit</span>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Comparison Section -->
-    <section class="comparison-section">
+    <!-- Pipeline Scope: sticky strip only sticks within this wrapper -->
+    <div class="pipeline-scope">
+
+    <!-- Sticky Pipeline Strip -->
+    <div class="pipeline-section" id="pipeline">
         <div class="container">
-            <div class="comparison">
-                <div class="comparison-text reveal">
-                    <h2>Why not just let it write Python? <span>Because code generation fails quietly.</span></h2>
-                    <p>
-                        Most "chat with your data" tools let the model write and execute arbitrary Python in a loop. It works, until it doesn't: a hallucinated column name, a silently wrong aggregation, a plot that never matches the numbers next to it.
-                    </p>
-                    <p>
-                        Scrygent's planner never touches your data. It emits a strict, validated instruction (the IR shown here), and a handwritten Python engine is the only thing allowed to compute anything. <strong>The LLM decides what; the engine decides how.</strong>
-                    </p>
+            <div class="pipeline-strip">
+                <div class="pipeline-node" data-node="profile">
+                    <span class="node-dot"></span>Profiler
                 </div>
-                <div class="code-block reveal">
-                    <div class="code-block-header">
-                        <span class="code-block-title">COMPILED IR</span>
-                        <span class="code-block-badge">Verified</span>
-                    </div>
-                    <pre><code><span style="color: var(--code-punct)">{</span>
-  <span style="color: var(--code-key)">"tool"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"analyze_data"</span><span style="color: var(--code-punct)">,</span>
-  <span style="color: var(--code-key)">"group_by"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-punct)">[</span><span style="color: var(--code-string)">"region"</span><span style="color: var(--code-punct)">],</span>
-  <span style="color: var(--code-key)">"metrics"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-punct)">[</span>
-    <span style="color: var(--code-punct)">{</span> <span style="color: var(--code-key)">"column"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"revenue"</span><span style="color: var(--code-punct)">,</span> <span style="color: var(--code-key)">"agg"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"sum"</span> <span style="color: var(--code-punct)">}</span>
-  <span style="color: var(--code-punct)">],</span>
-  <span style="color: var(--code-key)">"sort"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-punct)">{</span> <span style="color: var(--code-key)">"by"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"revenue"</span><span style="color: var(--code-punct)">,</span> <span style="color: var(--code-key)">"order"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-string)">"desc"</span> <span style="color: var(--code-punct)">},</span>
-  <span style="color: var(--code-key)">"limit"</span><span style="color: var(--code-punct)">:</span> <span style="color: var(--code-number)">1</span>
-<span style="color: var(--code-punct)">}</span></code></pre>
+                <div class="pipeline-connector" data-conn="1"></div>
+                <div class="pipeline-node" data-node="plan">
+                    <span class="node-dot"></span>Planner
+                </div>
+                <div class="pipeline-connector" data-conn="2"></div>
+                <div class="pipeline-node" data-node="execute">
+                    <span class="node-dot"></span>Executor
+                </div>
+                <div class="pipeline-connector" data-conn="3"></div>
+                <div class="pipeline-node" data-node="report">
+                    <span class="node-dot"></span>Reporter
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Built With Section -->
-    <section class="built-with">
-        <div class="container reveal">
-            <p class="built-with-label">BUILT WITH</p>
-            <div class="tech-stack">
-                <span>LangGraph</span>
-                <span>Pydantic v2</span>
-                <span>Pandas 3.x</span>
-                <span>NumExpr</span>
-                <span>Groq</span>
-                <span>Qdrant</span>
-                <span>Streamlit</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer / CTA -->
-    <footer>
+    <!-- 01 / PROFILE -->
+    <section id="profile" data-pipeline="profile">
         <div class="container">
             <div class="reveal">
-                <h2>Try it on your own data.</h2>
-                <p>Upload a CSV, ask a real question, watch the pipeline compile it live.</p>
-                <a href="https://scrygent.streamlit.app/" class="footer-cta">
-                    <span class="pulse-dot"></span>
-                    Launch Live Demo
-                </a>
+                <span class="section-label">01 / Profile</span>
+                <h2 class="section-headline">It reads before it answers.</h2>
+                <p class="section-desc">
+                    Before Scrygent tries to answer anything, it looks at the data itself. Most tools hand a CSV straight to an LLM and hope it guesses the right column names and values. Scrygent profiles the dataset first, so the planner starts from facts instead of assumptions.
+                </p>
+                <p class="section-detail">
+                    The Profiler runs in milliseconds and works structurally: it flags sequential IDs so they don't get mistaken for real numbers, builds regex skeletons to spot patterned columns like formatted IDs or names, and matches query tokens directly against categorical values, all before the prompt ever reaches the LLM.
+                </p>
             </div>
 
-            <div class="footer-bottom">
-                <span>© 2026 Scrygent. A deterministic compiler for data.</span>
-                <ul class="footer-links">
-                    <li><a href="https://mohamadmeri.pages.dev/">Portfolio</a></li>
-                    <li><a href="https://github.com/mohamadmeri/scrygent" target="_blank">GitHub</a></li>
-                    <li><a href="https://github.com/mohamadmeri/scrygent/blob/main/docs/ARCHITECTURE.md" target="_blank">Architecture</a></li>
-                </ul>
+            <div class="profile-grid reveal">
+                <!-- Dataset Preview -->
+                <div class="data-table-wrap">
+                    <div class="data-table-header">Dataset Preview · forbes_billionaires.csv</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>rank</th><th>personName</th><th>country</th><th>category</th><th>finalWorth</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>Elon Musk</td><td>United States</td><td>Technology</td><td>250.0</td></tr>
+                            <tr><td>2</td><td>Jeff Bezos</td><td>United States</td><td>Technology</td><td>195.0</td></tr>
+                            <tr><td>3</td><td>Bernard Arnault</td><td>France</td><td>Fashion</td><td>187.0</td></tr>
+                            <tr><td>4</td><td>Mark Zuckerberg</td><td>United States</td><td>Technology</td><td>172.0</td></tr>
+                            <tr><td>5</td><td>Larry Ellison</td><td>United States</td><td>Technology</td><td>159.0</td></tr>
+                            <tr><td>6</td><td>Warren Buffett</td><td>United States</td><td>Finance</td><td>148.0</td></tr>
+                            <tr><td>7</td><td>Bill Gates</td><td>United States</td><td>Technology</td><td>135.0</td></tr>
+                            <tr><td>8</td><td>Mukesh Ambani</td><td>India</td><td>Diversified</td><td>118.0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Profiler Output -->
+                <div>
+                    <div class="schema-list">
+                        <div class="schema-item">
+                            <span class="schema-name">rank</span>
+                            <span>
+                                <span class="schema-type">int64</span>
+                                <span class="schema-tag tag-sage">Sequential ID</span>
+                            </span>
+                        </div>
+                        <div class="schema-item">
+                            <span class="schema-name">personName</span>
+                            <span class="schema-type">object</span>
+                        </div>
+                        <div class="schema-item">
+                            <span class="schema-name">country</span>
+                            <span>
+                                <span class="schema-type">object · 77 unique</span>
+                                <span class="schema-tag tag-teal">Query Match</span>
+                            </span>
+                        </div>
+                        <div class="schema-item">
+                            <span class="schema-name">category</span>
+                            <span>
+                                <span class="schema-type">object · 18 unique</span>
+                                <span class="schema-tag tag-teal">Query Match</span>
+                            </span>
+                        </div>
+                        <div class="schema-item">
+                            <span class="schema-name">finalWorth</span>
+                            <span class="schema-type">float64</span>
+                        </div>
+                        <div class="schema-item">
+                            <span class="schema-name">source</span>
+                            <span>
+                                <span class="schema-type">object</span>
+                                <span class="schema-tag tag-amber">Skeleton: "A, A"</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="profile-insight">
+                        <h4>Query-Specific Matches</h4>
+                        <div class="insight-row">
+                            <span class="insight-key">category</span>
+                            <span class="insight-val">"tech" → <span style="color:var(--sage)">"Technology"</span></span>
+                        </div>
+                        <div class="insight-row">
+                            <span class="insight-key">country</span>
+                            <span class="insight-val">"US" → <span style="color:var(--sage)">"United States"</span></span>
+                        </div>
+                        <div class="insight-row">
+                            <span class="insight-key">country</span>
+                            <span class="insight-val">"China" → <span style="color:var(--sage)">"China"</span> (exact)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </footer>
+    </section>
 
-    <!-- JavaScript for Mirror Interaction & Scroll Reveals -->
+    <!-- 02 / PLAN -->
+    <section id="plan" data-pipeline="plan" style="background: var(--bg-surface);">
+        <div class="container">
+            <div class="reveal">
+                <span class="section-label">02 / Plan</span>
+                <h2 class="section-headline">It plans. It doesn't script.</h2>
+                <p class="section-desc">
+                    Asking an LLM to reason about your question and produce perfectly formed JSON in the same breath is asking for trouble. Scrygent splits that work into three passes, so the model never has to think about logic and syntax at the same time.
+                </p>
+                <p class="section-detail">
+                    Pass 1 reads intent and pulls structurally similar past plans from the vector store as few-shot examples. Pass 2 applies query optimizations like filter pushdown, metric consolidation, and top-N entity routing. Pass 3 takes that optimized plan and emits it as a strict, validated Pydantic payload, locked behind <code>json_mode</code> so the output can only ever be well-formed JSON.
+                </p>
+            </div>
+
+            <div class="pass-grid reveal">
+                <div class="pass-card">
+                    <span class="pass-number">Pass 1 · Parser</span>
+                    <h3 class="pass-title">Abstract Intent</h3>
+                    <p class="pass-body">
+                        First, the model just reads. No schema to worry about, no JSON to format, only what the question is actually asking for. It also checks the vector store for past plans that solved something similar, so it isn't starting cold.
+                    </p>
+                    <div class="pass-annotation">
+                        Intent: Filter Technology billionaires in US and China, compute average finalWorth, render a bar chart.
+                    </div>
+                </div>
+
+                <div class="pass-card">
+                    <span class="pass-number">Pass 2 · Optimizer</span>
+                    <h3 class="pass-title">Execution Heuristics</h3>
+                    <p class="pass-body">
+                        With intent settled, this pass rewrites the plan to run efficiently. Filters move earlier so the dataset shrinks before any aggregation touches it, redundant steps get merged, and queries chasing extremes (biggest, smallest, top N) get routed down a faster path.
+                    </p>
+                    <div class="pass-annotation">
+                        Filter Pushdown applied.<br>
+                        Conservation Invariant: params unchanged.
+                    </div>
+                </div>
+
+                <div class="pass-card active-pass">
+                    <span class="pass-number">Pass 3 · IR Emitter</span>
+                    <h3 class="pass-title">Strict JSON Binding</h3>
+                    <p class="pass-body">
+                        Only now does the plan become JSON. This pass translates it into strict Pydantic parameters, locked behind json_mode so the model's output vocabulary is physically restricted to valid tokens. Nothing malformed makes it through.
+                    </p>
+                    <div class="pass-annotation sage">
+                        IR emitted. Ready for execution.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lazy Fetch / Re-Plan Note -->
+            <div class="lazy-fetch-note reveal">
+                <strong>Constrained Re-Plan Loop.</strong> Sometimes the Planner needs more than the initial profile gave it. When that happens, it emits a single <code>request_column_stats</code> call and waits until the Executor enriches the profile with what it asked for. A <code>has_replanned</code> guard keeps this from looping: one mid-session augmentation per query, never more.
+            </div>
+
+            <!-- IR Climax -->
+            <div class="ir-climax reveal">
+                <div class="ir-header">
+                    <span class="ir-label">Compiled Intermediate Representation</span>
+                    <span class="ir-badge">Verified</span>
+                </div>
+                <pre class="ir-code"><code><span class="punct">{</span>
+  <span class="key">"steps"</span><span class="punct">: [</span>
+    <span class="punct">{</span>
+      <span class="key">"step_id"</span><span class="punct">:</span> <span class="string">"step_1"</span><span class="punct">,</span>
+      <span class="key">"rationale"</span><span class="punct">:</span> <span class="string">"Filter pushdown: Isolate US and China Technology billionaires to minimize data footprint before aggregation."</span><span class="punct">,</span>
+      <span class="key">"tool_name"</span><span class="punct">:</span> <span class="string">"filter_dataset"</span><span class="punct">,</span>
+      <span class="key">"parameters"</span><span class="punct">: {</span>
+        <span class="key">"filters"</span><span class="punct">: [</span>
+          <span class="punct">{</span> <span class="key">"column"</span><span class="punct">:</span> <span class="string">"country"</span><span class="punct">,</span> <span class="key">"operator"</span><span class="punct">:</span> <span class="string">"in"</span><span class="punct">,</span> <span class="key">"value"</span><span class="punct">:</span> <span class="punct">[</span><span class="string">"United States"</span><span class="punct">,</span> <span class="string">"China"</span><span class="punct">] }</span><span class="punct">,</span>
+          <span class="punct">{</span> <span class="key">"column"</span><span class="punct">:</span> <span class="string">"category"</span><span class="punct">,</span> <span class="key">"operator"</span><span class="punct">:</span> <span class="string">"=="</span><span class="punct">,</span> <span class="key">"value"</span><span class="punct">:</span> <span class="string">"Technology"</span> <span class="punct">}</span>
+        <span class="punct">]</span>
+      <span class="punct">},</span>
+      <span class="key">"required"</span><span class="punct">:</span> <span class="bool">true</span>
+    <span class="punct">},</span>
+    <span class="punct">{</span>
+      <span class="key">"step_id"</span><span class="punct">:</span> <span class="string">"step_2"</span><span class="punct">,</span>
+      <span class="key">"rationale"</span><span class="punct">:</span> <span class="string">"Generate a bar chart comparing finalWorth across the filtered countries."</span><span class="punct">,</span>
+      <span class="key">"tool_name"</span><span class="punct">:</span> <span class="string">"generate_plot"</span><span class="punct">,</span>
+      <span class="key">"parameters"</span><span class="punct">: {</span>
+        <span class="key">"plot_type"</span><span class="punct">:</span> <span class="string">"bar"</span><span class="punct">,</span>
+        <span class="key">"columns"</span><span class="punct">:</span> <span class="punct">[</span><span class="string">"country"</span><span class="punct">,</span> <span class="string">"finalWorth"</span><span class="punct">],</span>
+        <span class="key">"title"</span><span class="punct">:</span> <span class="string">"Avg Net Worth: US vs China (Tech)"</span>
+      <span class="punct">},</span>
+      <span class="key">"required"</span><span class="punct">:</span> <span class="bool">true</span>
+    <span class="punct">}</span>
+  <span class="punct">]</span>
+<span class="punct">}</span></code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- 03 / EXECUTE -->
+    <section id="execute" data-pipeline="execute">
+        <div class="container">
+            <div class="reveal">
+                <span class="section-label">03 / Execute</span>
+                <h2 class="section-headline">Deterministic code.<br>Zero hallucination.</h2>
+                <p class="section-desc">
+                    Once a plan is verified, the Executor runs it against a handwritten suite of pure Python tools, nothing generated, nothing improvised. Watch the log on the left: step one runs clean, but step two hits a wall the LLM couldn't have predicted.
+                </p>
+                <p class="section-detail">
+                    Transforming tools pass state through immutable temporary files instead of holding DataFrames in memory, and all row-wise math runs through <code>numexpr</code> with a wiped global dictionary, so there's no path to an <code>eval()</code> injection. When a step fails, as it does below, that failure doesn't crash the run. It becomes context for the correction loop explained to the right.
+                </p>
+            </div>
+
+            <div class="execute-layout reveal">
+                <!-- Compiler Log -->
+                <div class="compiler-log">
+                    <div class="log-line">
+                        <span class="log-check">[✓]</span>
+                        <span class="log-text">Step 0: Dispatching filter_dataset...</span>
+                        <span class="log-time">14ms</span>
+                    </div>
+                    <div class="log-detail">filters: country in ["United States", "China"], category == "Technology"</div>
+
+                    <div class="log-line" style="margin-top: 0.75rem;">
+                        <span class="log-warn">[!]</span>
+                        <span class="log-text">Error: Filter returned 0 rows</span>
+                    </div>
+                    <div class="log-detail">No exact match for <em>'US'</em> in column 'country'.</div>
+                    <div class="log-detail">Did you mean one of these exact values: <span style="color:var(--teal)">['United States']</span>?</div>
+
+                    <div class="log-line" style="margin-top: 0.75rem;">
+                        <span class="log-bolt">[⚡]</span>
+                        <span class="log-text">Triggering internal LLM Correction Chain...</span>
+                    </div>
+                    <div class="log-detail">Available columns injected into LLM context.</div>
+
+                    <div class="log-line" style="margin-top: 0.75rem;">
+                        <span class="log-check">[✓]</span>
+                        <span class="log-text">Parameters patched. Retrying step_1 (Attempt 2/3)...</span>
+                        <span class="log-time">312ms</span>
+                    </div>
+                    <div class="log-detail">Wrote transformed dataset to <span class="log-file">/tmp/scrygent_wrangle_8f92a.csv</span> (rows: 341)</div>
+
+                    <div class="log-line" style="margin-top: 1rem;">
+                        <span class="log-check">[✓]</span>
+                        <span class="log-text">Step 1: Dispatching generate_plot...</span>
+                        <span class="log-time">8ms</span>
+                    </div>
+                    <div class="log-detail">Loading active dataset from <span class="log-file">/tmp/scrygent_wrangle_8f92a.csv</span></div>
+                    <div class="log-detail">Image saved to <span class="log-file">/tmp/scrygent_plot_b349x.png</span></div>
+
+                    <div class="log-line" style="margin-top: 1rem;">
+                        <span class="log-check">[✓]</span>
+                        <span class="log-text">execution_status: complete</span>
+                        <span class="log-time">334ms total</span>
+                    </div>
+
+                    <div class="zero-trust-note">
+                        🔒 Zero-Trust Math: All row-wise expressions are evaluated via numexpr with global_dict={}. No eval(). No code injection.
+                    </div>
+                </div>
+
+                <!-- Self-Healing Block -->
+                <div class="self-heal" id="selfHeal">
+                    <button class="self-heal-toggle" onclick="toggleSelfHeal()">
+                        <span>⚡</span>
+                        <span>How self-healing works</span>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="self-heal-content">
+                        <div class="heal-step">
+                            <span class="heal-icon">1</span>
+                            <span class="heal-text">The LLM writes <em>"US"</em>, a reasonable guess, but not what's actually in the column.</span>
+                        </div>
+                        <div class="heal-step">
+                            <span class="heal-icon">2</span>
+                            <span class="heal-text">The filter runs, returns zero rows, and the engine catches it immediately.</span>
+                        </div>
+                        <div class="heal-step">
+                            <span class="heal-icon">3</span>
+                            <span class="heal-suggest">difflib checks the real values and finds a close match: <em>"United States"</em></span>
+                        </div>
+                        <div class="heal-step">
+                            <span class="heal-icon">4</span>
+                            <span class="heal-text">The correction chain wakes up with that suggestion in hand and patches the JSON.</span>
+                        </div>
+                        <div class="heal-step">
+                            <span class="heal-icon">5</span>
+                            <span class="heal-retry">Retry 2 of 3 succeeds in 312ms, and the plan keeps moving.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 04 / REPORT -->
+    <section id="report" data-pipeline="report" style="background: var(--bg-surface);">
+        <div class="container">
+            <div class="reveal">
+                <span class="section-label">04 / Report</span>
+                <h2 class="section-headline">The answer.<br>Not a narrative.</h2>
+                <p class="section-desc">
+                    By the time the query reaches the Reporter, every number in it has already been verified. The Reporter's only job is to state that answer plainly before it says anything else.
+                </p>
+                <p class="section-detail">
+                    It's prompted to fill a dedicated <code>primary_answer</code> field, built entirely from the tool outputs upstream. Everything else, the supporting observations below, comes after, and only from what was actually computed.
+                </p>
+            </div>
+
+            <div class="reveal">
+                <div class="report-card">
+                    <div class="primary-answer">
+                        Tech billionaires in the <strong>United States</strong> average a net worth of <strong>$8.2B</strong>, compared to <strong>$4.1B</strong> for those in <strong>China</strong>.
+                    </div>
+
+                    <ul class="insight-list">
+                        <li>The US cohort is 2× larger (247 individuals vs. 118), but the per-capita advantage remains significant even after normalizing for sample size.</li>
+                        <li>China's Technology billionaires skew younger too (average age 52, versus 61 in the US), suggesting a faster wealth-creation velocity.</li>
+                        <li>Both cohorts show right-skewed distributions; the median gap ($6.1B vs. $2.8B) is narrower than the mean, indicating a few US outliers inflate the average.</li>
+                    </ul>
+
+                    <div class="prime-directive">
+                        <strong>The Prime Directive.</strong> The answer comes first, always, because the schema requires it: the Pydantic model gives the LLM an isolated field for the direct answer, and nowhere else to put it. Everything that follows has to trace back to the verified JSON payload. There's no field for outside facts, so there's nowhere for a hallucination to hide.
+                    </div>
+                </div>
+
+                <!-- Graph -->
+                <div class="graph-container">
+                    <div class="graph-header">
+                        <span class="graph-title">Avg Net Worth: US vs China (Tech)</span>
+                        <span class="graph-badge">Generated by Scrygent</span>
+                    </div>
+                    <svg class="svg-chart" viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="80" y1="40" x2="560" y2="40" stroke="#44403C" stroke-width="0.5" opacity="0.5"/>
+                        <line x1="80" y1="90" x2="560" y2="90" stroke="#44403C" stroke-width="0.5" opacity="0.5"/>
+                        <line x1="80" y1="140" x2="560" y2="140" stroke="#44403C" stroke-width="0.5" opacity="0.5"/>
+                        <line x1="80" y1="190" x2="560" y2="190" stroke="#44403C" stroke-width="0.5" opacity="0.5"/>
+                        <line x1="80" y1="240" x2="560" y2="240" stroke="#44403C" stroke-width="0.5" opacity="0.5"/>
+
+                        <text x="70" y="245" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">0</text>
+                        <text x="70" y="195" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">2</text>
+                        <text x="70" y="145" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">4</text>
+                        <text x="70" y="95" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">6</text>
+                        <text x="70" y="45" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">8</text>
+                        <text x="40" y="145" text-anchor="middle" fill="#78716C" font-family="JetBrains Mono" font-size="10" transform="rotate(-90 40 145)">Net Worth ($B)</text>
+
+                        <rect x="160" y="102" width="80" height="148" fill="#7FB069" rx="4" opacity="0.9"/>
+                        <rect x="360" y="162" width="80" height="88" fill="#5EEAD4" rx="4" opacity="0.85"/>
+
+                        <text x="200" y="94" text-anchor="middle" fill="#F5F0EB" font-family="JetBrains Mono" font-size="13" font-weight="500">$8.2B</text>
+                        <text x="400" y="154" text-anchor="middle" fill="#F5F0EB" font-family="JetBrains Mono" font-size="13" font-weight="500">$4.1B</text>
+
+                        <text x="200" y="275" text-anchor="middle" fill="#A8A29A" font-family="Inter" font-size="12" font-weight="500">United States</text>
+                        <text x="400" y="275" text-anchor="middle" fill="#A8A29A" font-family="Inter" font-size="12" font-weight="500">China</text>
+
+                        <line x1="80" y1="250" x2="560" y2="250" stroke="#44403C" stroke-width="1"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    </div>
+    <!-- /Pipeline Scope -->
+
+    <!-- Resilience / Production Features -->
+    <section>
+        <div class="container">
+            <div class="reveal">
+                <span class="section-label">Production Resilience</span>
+                <h2 class="section-headline">Built for real traffic.<br>Not just happy paths.</h2>
+                <p class="section-desc">
+                    A demo only has to work once. A tool people actually rely on has to survive rate limits and dropped connections, and shouldn't be rebuilt from scratch the day one LLM provider stops being the right choice. These are the patterns that keep Scrygent running, and adaptable.
+                </p>
+            </div>
+
+            <div class="resilience-grid reveal">
+                <div class="resilience-card">
+                    <h4>Custom Rate-Limit Pacer</h4>
+                    <p>Hit a real 429 mid-query and the whole run shouldn't die. A RunnableLambda catches it and backs off with deterministic jitter, while a ContextVar carries live cooldown status up to the UI without pulling a single Streamlit import into the core engine, so the engine stays usable outside Streamlit too.</p>
+                </div>
+                <div class="resilience-card">
+                    <h4>Provider-Agnostic Architecture</h4>
+                    <p>The Planner and Reporter nodes never call Groq or OpenRouter directly, they call an LLM factory. Swapping which provider backs a given run is a configuration change, not a rewrite. Nothing hot-switches mid-query, but nothing is welded to one vendor either.</p>
+                </div>
+                <div class="resilience-card">
+                    <h4>Serverless Memory</h4>
+                    <p>Every successful plan is worth remembering. It's embedded with FastEmbed and stored in Qdrant Cloud, so a future query that looks structurally similar can retrieve it as a few-shot example. The planner gets sharper with use, with no retraining and no server to maintain.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <section class="footer-cta-section">
+        <div class="container reveal">
+            <h2>Try it on your own data.</h2>
+            <p>Upload a CSV, ask a real question, watch the pipeline compile it live.</p>
+            <a href="https://scrygent.streamlit.app/" class="footer-cta-btn">
+                <span class="pulse-dot"></span>
+                Launch Live Demo
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+        <div class="container footer-bottom-inner">
+            <span>© 2026 Scrygent. A deterministic compiler for data.</span>
+            <ul class="footer-links">
+                <li><a href="https://mohamadmeri.pages.dev/" target="_blank">Portfolio</a></li>
+                <li><a href="https://github.com/mohamadmeri/scrygent" target="_blank">GitHub</a></li>
+                <li><a href="https://github.com/mohamadmeri/scrygent/blob/main/docs/ARCHITECTURE.md" target="_blank">Architecture</a></li>
+            </ul>
+        </div>
+    </div>
+
     <script>
-        // 1. The Obsidian Mirror Interaction
-        const mirror = document.getElementById('mirror');
-
-        mirror.addEventListener('mousemove', (e) => {
-            const rect = mirror.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            mirror.style.setProperty('--x', `${x}px`);
-            mirror.style.setProperty('--y', `${y}px`);
-        });
-
-        // 2. Scroll Reveal Animation
-        const observerOptions = {
-            threshold: 0.15,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
+        // Scroll Reveal
+        const observerOptions = { threshold: 0.12, rootMargin: '0px 0px -40px 0px' };
+        const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
+                    revealObserver.unobserve(entry.target);
                 }
             });
         }, observerOptions);
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-        document.querySelectorAll('.reveal').forEach(el => {
-            observer.observe(el);
-        });
+        // Pipeline Highlight on Scroll
+        const pipelineNodes = document.querySelectorAll('.pipeline-node');
+        const pipelineConns = document.querySelectorAll('.pipeline-connector');
+        const sections = document.querySelectorAll('section[data-pipeline]');
+
+        const pipelineObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const activeNode = entry.target.dataset.pipeline;
+                    updatePipeline(activeNode);
+                }
+            });
+        }, { threshold: 0, rootMargin: '-130px 0px -75% 0px' });
+
+        sections.forEach(section => pipelineObserver.observe(section));
+
+        function updatePipeline(active) {
+            const order = ['profile', 'plan', 'execute', 'report'];
+            const activeIndex = order.indexOf(active);
+            pipelineNodes.forEach(node => {
+                const nodeKey = node.dataset.node;
+                const nodeIndex = order.indexOf(nodeKey);
+                node.classList.remove('active', 'done');
+                if (nodeIndex === activeIndex) node.classList.add('active');
+                else if (nodeIndex < activeIndex) node.classList.add('done');
+            });
+            pipelineConns.forEach((conn, idx) => {
+                conn.classList.toggle('active', idx < activeIndex);
+            });
+        }
+        updatePipeline('profile');
+
+        // Self-Healing Toggle
+        function toggleSelfHeal() {
+            document.getElementById('selfHeal').classList.toggle('open');
+        }
     </script>
 </body>
 </html>
