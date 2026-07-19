@@ -1,7 +1,7 @@
 # Scrygent Landing Page
 [![Netlify Status](https://api.netlify.com/api/v1/badges/4618536f-452b-45bf-b528-66129c77f182/deploy-status)](https://app.netlify.com/projects/scrygent/deploys)
 
-A standalone, framework-free marketing landing page for [Scrygent](https://github.com/mohamadmeri/scrygent), a strictly typed compiler engine for data analysis.
+A standalone landing page for [Scrygent](https://github.com/mohamadmeri/scrygent), a strictly typed compiler engine for data analysis.
 
 ## Links
 
