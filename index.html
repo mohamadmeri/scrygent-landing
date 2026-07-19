@@ -6,6 +6,8 @@
     <title>Scrygent · Deterministic Compiler for Data</title>
     <meta name="description" content="Scrygent turns natural language questions into strict, verified execution graphs instead of generated code, so every answer traces back to real math, not a guess.">
 
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -18,8 +20,8 @@
             --border-subtle: #4C463D;
             --border-accent: rgba(127, 176, 105, 0.25);
             --text-primary: #F5F0EB;
-            --text-secondary: #A8A29A;
-            --text-muted: #78716C;
+            --text-secondary: #ADA89C;
+            --text-muted: #7D7669;
             --sage: #7FB069;
             --teal: #5EEAD4;
             --amber: #F59E0B;
@@ -69,6 +71,8 @@
             color: var(--text-primary); text-decoration: none; letter-spacing: -0.02em;
         }
         .nav-brand .mark { color: var(--sage); margin-right: 0.25rem; }
+        .nav-brand img.logo-icon { height: 32px; width: 32px; margin-right: 0.5rem; vertical-align: -9px; }
+        .footer-logo { height: 64px; width: 64px; margin: 0 auto 1.5rem; display: block; }
         .nav-links { display: none; align-items: center; gap: 2rem; list-style: none; }
         @media (min-width: 768px) { .nav-links { display: flex; } }
         .nav-links a { font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; font-family: var(--font-body); }
@@ -416,7 +420,7 @@
     <!-- Navigation -->
     <nav>
         <div class="container nav-inner">
-            <a href="#" class="nav-brand"><span class="mark">◆</span>Scrygent</a>
+            <a href="#" class="nav-brand"><img src="assets/logo-icon.png" alt="" class="logo-icon">Scrygent</a>
             <ul class="nav-links">
                 <li><a href="https://mohamadmeri.pages.dev/" target="_blank">Portfolio</a></li>
                 <li><a href="https://github.com/mohamadmeri/scrygent/blob/main/docs/ARCHITECTURE.md" target="_blank">Architecture</a></li>
@@ -822,12 +826,12 @@
                         <line x1="80" y1="190" x2="560" y2="190" stroke="#44403C" stroke-width="0.5" opacity="0.5"/>
                         <line x1="80" y1="240" x2="560" y2="240" stroke="#44403C" stroke-width="0.5" opacity="0.5"/>
 
-                        <text x="70" y="245" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">0</text>
-                        <text x="70" y="195" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">2</text>
-                        <text x="70" y="145" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">4</text>
-                        <text x="70" y="95" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">6</text>
-                        <text x="70" y="45" text-anchor="end" fill="#78716C" font-family="JetBrains Mono" font-size="11">8</text>
-                        <text x="40" y="145" text-anchor="middle" fill="#78716C" font-family="JetBrains Mono" font-size="10" transform="rotate(-90 40 145)">Net Worth ($B)</text>
+                        <text x="70" y="245" text-anchor="end" fill="#7D7669" font-family="JetBrains Mono" font-size="11">0</text>
+                        <text x="70" y="195" text-anchor="end" fill="#7D7669" font-family="JetBrains Mono" font-size="11">2</text>
+                        <text x="70" y="145" text-anchor="end" fill="#7D7669" font-family="JetBrains Mono" font-size="11">4</text>
+                        <text x="70" y="95" text-anchor="end" fill="#7D7669" font-family="JetBrains Mono" font-size="11">6</text>
+                        <text x="70" y="45" text-anchor="end" fill="#7D7669" font-family="JetBrains Mono" font-size="11">8</text>
+                        <text x="40" y="145" text-anchor="middle" fill="#7D7669" font-family="JetBrains Mono" font-size="10" transform="rotate(-90 40 145)">Net Worth ($B)</text>
 
                         <rect x="160" y="102" width="80" height="148" fill="#7FB069" rx="4" opacity="0.9"/>
                         <rect x="360" y="162" width="80" height="88" fill="#5EEAD4" rx="4" opacity="0.85"/>
@@ -835,8 +839,8 @@
                         <text x="200" y="94" text-anchor="middle" fill="#F5F0EB" font-family="JetBrains Mono" font-size="13" font-weight="500">$8.2B</text>
                         <text x="400" y="154" text-anchor="middle" fill="#F5F0EB" font-family="JetBrains Mono" font-size="13" font-weight="500">$4.1B</text>
 
-                        <text x="200" y="275" text-anchor="middle" fill="#A8A29A" font-family="Inter" font-size="12" font-weight="500">United States</text>
-                        <text x="400" y="275" text-anchor="middle" fill="#A8A29A" font-family="Inter" font-size="12" font-weight="500">China</text>
+                        <text x="200" y="275" text-anchor="middle" fill="#ADA89C" font-family="Inter" font-size="12" font-weight="500">United States</text>
+                        <text x="400" y="275" text-anchor="middle" fill="#ADA89C" font-family="Inter" font-size="12" font-weight="500">China</text>
 
                         <line x1="80" y1="250" x2="560" y2="250" stroke="#44403C" stroke-width="1"/>
                     </svg>
@@ -879,6 +883,7 @@
     <!-- Footer CTA -->
     <section class="footer-cta-section">
         <div class="container reveal">
+            <img src="assets/logo-icon.png" alt="Scrygent" class="footer-logo">
             <h2>Try it on your own data.</h2>
             <p>Upload a CSV, ask a real question, watch the pipeline compile it live.</p>
             <a href="https://scrygent.streamlit.app/" class="footer-cta-btn">
