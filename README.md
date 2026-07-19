@@ -3,8 +3,6 @@
 
 A standalone, framework-free marketing landing page for [Scrygent](https://github.com/mohamadmeri/scrygent), a strictly typed compiler engine for data analysis.
 
-This repository contains a single `index.html` file (with inline CSS and vanilla JS) designed for zero-build-step deployment on Cloudflare Pages.
-
 ## Links
 
 * **[Live Demo](#)**
